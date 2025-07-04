@@ -37,7 +37,7 @@ jobs:
       user: 'root'
       app-dir: ${{ vars.PROD_APP_DIR }}
       tmp-dir: '/tmp/deploy'
-      pre-copy: 'sudo systemctl stop CompanyPresentationBackend'
-      post-copy: 'sudo chown -R www-data ${{vars.PROD_APP_DIR}} && sudo chmod +x ${{vars.PROD_APP_DIR}}/Presentation && sudo systemctl start CompanyPresentationBackend'
+      pre-copy: 'sudo service CompanyPresentationBackend stop'
+      post-copy: 'sudo chown -R www-data ${{vars.PROD_APP_DIR}} && sudo chmod +x ${{vars.PROD_APP_DIR}}/Presentation && sudo service CompanyPresentationBackend start'
     secrets:
       private-key: ${{ secrets.PROD_SSH_KEY }}
