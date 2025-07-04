@@ -4,6 +4,7 @@ using Application.Employeers.Queries;
 using Application.Employeers.Queries.DTO;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.DTO;
 
 namespace Presentation.Controllers;
 
@@ -54,11 +55,23 @@ public class EmployeesController(IMediator mediator) : ControllerBase
         return Ok();
     }
 
-    [HttpPut]
+    [HttpPut("{id}")]
     [ProducesResponseType(200)]
     [ProducesResponseType(404)]
-    public async Task<IActionResult> Update([FromQuery] UpdateEmployeeCommand command)
+    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateEmployeeDTO updateEmployeeDTO)
     {
+        var command = new UpdateEmployeeCommand
+        {
+            Id = id,
+            Department = updateEmployeeDTO.Department,
+            FirstName = updateEmployeeDTO.FirstName,
+            MiddleName = updateEmployeeDTO.MiddleName,
+            LastName = updateEmployeeDTO.LastName,
+            BirthDate = updateEmployeeDTO.BirthDate,
+            HireDate = updateEmployeeDTO.HireDate,
+            Salary = updateEmployeeDTO.Salary
+        };
+
         await mediator.Send(command);
 
         return Ok();
