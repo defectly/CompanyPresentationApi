@@ -1,0 +1,43 @@
+# This workflow will build a .NET project 
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: .NET
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+    - name: Publish App
+      run: dotnet publish "Presentation/Presentation.csproj" -a x64 -c Release -o out --self-contained -p:PublishSingleFile=true
+    - name: Prepare Files
+      run: sudo rm out/appsettings.json
+    - name: Upload results
+      uses: actions/upload-artifact@v4
+      with:
+        name: build
+        path: out
+        retention-days: 1
+  deploy-to-host:
+    needs: build
+    uses: "defectly/DeployApplicationToHostAction/.github/workflows/DeployApplicationToHost.yml@master"
+    with:
+      host: ${{ vars.PROD_SSH_HOST }}
+      port: '2222'
+      user: 'root'
+      app-dir: ${{ vars.PROD_APP_DIR }}
+      tmp-dir: '/tmp/deploy'
+      pre-copy: 'sudo service CompanyPresentationBackend stop'
+      post-copy: 'sudo chown -R www-data ${{vars.PROD_APP_DIR}} && sudo chmod +x ${{vars.PROD_APP_DIR}}/Presentation && sudo service CompanyPresentationBackend start'
+    secrets:
+      private-key: ${{ secrets.PROD_SSH_KEY }}
