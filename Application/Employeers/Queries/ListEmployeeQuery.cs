@@ -40,18 +40,18 @@ public class ListEmployeeQueryHandler(IDbContext db, IMapper mapper) : IRequestH
 
     private static void FilterEmployees(IQueryable<Employee> employees, ListEmployeeQuery request)
     {
-        if (request.Department != null)
+        if (!string.IsNullOrWhiteSpace(request.Department))
             employees = employees.Where(employee => employee.Department.ToLower().Contains(request.Department.ToLower()));
 
-        if (request.FirstName != null)
+        if (!string.IsNullOrWhiteSpace(request.FirstName))
             employees = employees.Where(employee => employee.FirstName.ToLower().Contains(request.FirstName.ToLower()));
 
-        if (request.MiddleName != null)
+        if (!string.IsNullOrWhiteSpace(request.MiddleName))
             employees = employees
                 .Where(employee => employee.MiddleName != null)
                 .Where(employee => employee.MiddleName!.ToLower().Contains(request.MiddleName.ToLower()));
 
-        if (request.LastName != null)
+        if (!string.IsNullOrWhiteSpace(request.LastName))
             employees = employees.Where(employee => employee.LastName.ToLower().Contains(request.LastName.ToLower()));
 
         if (request.MinBirthDate != null)
