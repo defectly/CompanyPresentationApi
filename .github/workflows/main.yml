@@ -19,7 +19,7 @@ jobs:
       with:
         dotnet-version: 8.0.x
     - name: Publish App
-      run: dotnet publish "WebApi/WebApi.csproj" -a x64 -c Release -o out --self-contained -p:PublishSingleFile=true
+      run: dotnet publish "Presentation/Presentation.csproj" -a x64 -c Release -o out --self-contained -p:PublishSingleFile=true
     - name: Prepare Files
       run: sudo rm out/appsettings.json
     - name: Upload results
@@ -38,6 +38,6 @@ jobs:
       app-dir: ${{ vars.PROD_APP_DIR }}
       tmp-dir: '/tmp/deploy'
       pre-copy: 'sudo systemctl stop CompanyPresentationBackend'
-      post-copy: 'sudo chown -R www-data ${{vars.PROD_APP_DIR}} && sudo chmod +x ${{vars.PROD_APP_DIR}}/WebApi && sudo systemctl start CompanyPresentationBackend'
+      post-copy: 'sudo chown -R www-data ${{vars.PROD_APP_DIR}} && sudo chmod +x ${{vars.PROD_APP_DIR}}/Presentation && sudo systemctl start CompanyPresentationBackend'
     secrets:
       private-key: ${{ secrets.PROD_SSH_KEY }}
