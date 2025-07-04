@@ -42,15 +42,15 @@ public class ListEmployeeQueryHandler(IDbContext db, IMapper mapper) : IRequestH
         IQueryable<Employee> employees = db.Employees
             .AsNoTrackingWithIdentityResolution();
 
-        FilterEmployees(employees, request);
-        SortEmployees(employees, request);
+        employees = FilterEmployees(employees, request);
+        employees = SortEmployees(employees, request);
 
         var pagination = PaginationDTO<GetEmployeeDTO>.CreateMappedPagination(employees, request.Page, request.Limit, mapper);
 
         return pagination;
     }
 
-    private static void FilterEmployees(IQueryable<Employee> employees, ListEmployeeQuery request)
+    private static IQueryable<Employee> FilterEmployees(IQueryable<Employee> employees, ListEmployeeQuery request)
     {
         if (!string.IsNullOrWhiteSpace(request.Department))
             employees = employees.Where(employee => employee.Department.ToLower().Contains(request.Department.ToLower()));
@@ -83,9 +83,11 @@ public class ListEmployeeQueryHandler(IDbContext db, IMapper mapper) : IRequestH
 
         if (request.MaxSalary != null)
             employees = employees.Where(employee => employee.Salary <= request.MaxSalary);
+
+        return employees;
     }
 
-    private static void SortEmployees(IQueryable<Employee> employees, ListEmployeeQuery request)
+    private static IQueryable<Employee> SortEmployees(IQueryable<Employee> employees, ListEmployeeQuery request)
     {
         if (request.DepartmentSort != DepartmentSort.None)
             employees = request.DepartmentSort == DepartmentSort.Ascending ? employees.OrderBy(emp => emp.Department) : employees.OrderByDescending(emp => emp.Department);
@@ -107,5 +109,7 @@ public class ListEmployeeQueryHandler(IDbContext db, IMapper mapper) : IRequestH
 
         if (request.SalarySort != SalarySort.None)
             employees = request.SalarySort == SalarySort.Ascending ? employees.OrderBy(emp => emp.Salary) : employees.OrderByDescending(emp => emp.Salary);
+
+        return employees;
     }
 }
