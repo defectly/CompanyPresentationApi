@@ -37,7 +37,7 @@ public class EmployeesController(IMediator mediator) : ControllerBase
     [HttpPost]
     [ProducesResponseType(200)]
     [Produces(typeof(Guid))]
-    public async Task<IActionResult> Create([FromQuery] CreateEmployeeCommand query)
+    public async Task<IActionResult> Create(CreateEmployeeCommand query)
     {
         var response = await mediator.Send(query);
 
@@ -58,7 +58,7 @@ public class EmployeesController(IMediator mediator) : ControllerBase
     [HttpPut("{id}")]
     [ProducesResponseType(200)]
     [ProducesResponseType(404)]
-    public async Task<IActionResult> Update([FromRoute] Guid id, [FromBody] UpdateEmployeeDTO updateEmployeeDTO)
+    public async Task<IActionResult> Update([FromRoute] Guid id, UpdateEmployeeDTO updateEmployeeDTO)
     {
         var command = new UpdateEmployeeCommand
         {
