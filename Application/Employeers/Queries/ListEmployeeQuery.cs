@@ -26,6 +26,10 @@ public class ListEmployeeQuery : IRequest<PaginationDTO<GetEmployeeDTO>>
     public decimal? MinSalary { get; set; }
     public decimal? MaxSalary { get; set; }
 
+    public DepartmentSort DepartmentSort { get; set; } = DepartmentSort.None;
+    public FirstNameSort FirstNameSort { get; set; } = FirstNameSort.None;
+    public MiddleNameSort MiddleNameSort { get; set; } = MiddleNameSort.None;
+    public LastNameSort LastNameSort { get; set; } = LastNameSort.None;
     public HireDateSort HireDateSort { get; set; } = HireDateSort.None;
     public BirthDateSort BirthDateSort { get; set; } = BirthDateSort.None;
     public SalarySort SalarySort { get; set; } = SalarySort.None;
@@ -83,6 +87,18 @@ public class ListEmployeeQueryHandler(IDbContext db, IMapper mapper) : IRequestH
 
     private static void SortEmployees(IQueryable<Employee> employees, ListEmployeeQuery request)
     {
+        if (request.DepartmentSort != DepartmentSort.None)
+            employees = request.DepartmentSort == DepartmentSort.Ascending ? employees.OrderBy(emp => emp.Department) : employees.OrderByDescending(emp => emp.Department);
+
+        if (request.FirstNameSort != FirstNameSort.None)
+            employees = request.FirstNameSort == FirstNameSort.Ascending ? employees.OrderBy(emp => emp.FirstName) : employees.OrderByDescending(emp => emp.FirstName);
+
+        if (request.MiddleNameSort != MiddleNameSort.None)
+            employees = request.MiddleNameSort == MiddleNameSort.Ascending ? employees.OrderBy(emp => emp.MiddleName) : employees.OrderByDescending(emp => emp.MiddleName);
+
+        if (request.LastNameSort != LastNameSort.None)
+            employees = request.LastNameSort == LastNameSort.Ascending ? employees.OrderBy(emp => emp.LastName) : employees.OrderByDescending(emp => emp.LastName);
+
         if (request.HireDateSort != HireDateSort.None)
             employees = request.HireDateSort == HireDateSort.Ascending ? employees.OrderBy(emp => emp.HireDate) : employees.OrderByDescending(emp => emp.HireDate);
 

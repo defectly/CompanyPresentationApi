@@ -1,6 +1,6 @@
 ﻿namespace Application.Common.Enums;
 
-public enum SalarySort
+public enum MiddleNameSort
 {
     None,
     Ascending,
