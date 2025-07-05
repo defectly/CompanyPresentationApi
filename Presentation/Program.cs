@@ -24,9 +24,6 @@ app.UseSwaggerUi();
 
 app.MapControllers();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseCors(x => x.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
-}
+app.UseCors(x => x.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 
 app.Run();
