@@ -1,13 +1,10 @@
 using Application.Common.DTO;
 using Application.Departments.Commands;
-using Application.Employeers.Queries.DTO;
-using Application.Employeers.Queries;
-using MediatR;
-using Microsoft.AspNetCore.Mvc;
 using Application.Departments.Queries;
 using Application.Departments.Queries.DTO;
 using Application.Employeers.Commands;
-using Presentation.DTO;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation.Controllers;
 

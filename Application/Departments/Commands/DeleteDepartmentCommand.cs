@@ -3,7 +3,7 @@ using Application.Exceptions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace Application.Employeers.Commands;
+namespace Application.Departments.Commands;
 
 public record DeleteDepartmentCommand(Guid Id) : IRequest;
 
