@@ -1,5 +1,4 @@
-﻿using Application.Common.Attributes;
-using Application.Common.DTO;
+﻿using Application.Common.DTO;
 using Application.Common.Enums;
 using Application.Common.Services;
 using Application.Employeers.Queries.DTO;
@@ -16,14 +15,14 @@ public class ListEmployeeQuery : IRequest<PaginationDTO<GetEmployeeDTO>>
     public int Page { get; set; } = 1;
     public int Limit { get; set; } = 20;
 
-    [Sortable] public string? Department { get; set; }
-    [Sortable] public string? FirstName { get; set; }
-    [Sortable] public string? MiddleName { get; set; }
-    [Sortable] public string? LastName { get; set; }
+    public string? Department { get; set; }
+    public string? FirstName { get; set; }
+    public string? MiddleName { get; set; }
+    public string? LastName { get; set; }
 
-    [Sortable] public DateTime? BirthDate { get; set; }
-    [Sortable] public DateTime? HireDate { get; set; }
-    [Sortable] public decimal? Salary { get; set; }
+    public DateTime? BirthDate { get; set; }
+    public DateTime? HireDate { get; set; }
+    public decimal? Salary { get; set; }
 
     public DateTime? MinBirthDate { get; set; }
     public DateTime? MaxBirthDate { get; set; }
@@ -33,24 +32,7 @@ public class ListEmployeeQuery : IRequest<PaginationDTO<GetEmployeeDTO>>
     public decimal? MaxSalary { get; set; }
 
     public SortDirection SortDirection { get; set; } = SortDirection.None;
-    public string? SortPropertyName { get; set; }
-}
-
-public class ListEmployeeQueryValidator : AbstractValidator<ListEmployeeQuery>
-{
-    private static readonly HashSet<string> _sortable =
-    typeof(ListEmployeeQuery).GetProperties()
-                    .Where(p => Attribute.IsDefined(p, typeof(SortableAttribute)))
-                    .Select(p => p.Name)
-                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
-
-    public ListEmployeeQueryValidator()
-    {
-        RuleFor(query => query.SortPropertyName)
-            .Must(_sortable.Contains)
-            .When(query => query.SortPropertyName != null)
-            .WithMessage($"{nameof(ListEmployeeQuery.SortPropertyName)} must be one of the following: {string.Join(", ", _sortable)}");
-    }
+    public EmployeeSort EmployeeSort { get; set; } = EmployeeSort.None;
 }
 
 public class ListEmployeeQueryHandler(IDbContext db, IMapper mapper) : IRequestHandler<ListEmployeeQuery, PaginationDTO<GetEmployeeDTO>>
@@ -108,13 +90,41 @@ public class ListEmployeeQueryHandler(IDbContext db, IMapper mapper) : IRequestH
 
     private static IQueryable<Employee> SortEmployees(IQueryable<Employee> employees, ListEmployeeQuery request)
     {
-        if (request.SortPropertyName == null || request.SortDirection == SortDirection.None)
+        if (request.EmployeeSort == EmployeeSort.None || request.SortDirection == SortDirection.None)
             return employees;
 
-        if (request.SortDirection == SortDirection.Ascending)
-            employees = employees.OrderBy(employee => employee.GetType().GetProperty(request.SortPropertyName));
-        else
-            employees = employees.OrderByDescending(employee => employee.GetType().GetProperty(request.SortPropertyName));
+        employees = request.EmployeeSort switch
+        {
+            EmployeeSort.Department => employees = request.SortDirection == SortDirection.Ascending ?
+                employees.OrderBy(employee => employee.Department.Name) :
+                employees.OrderByDescending(employee => employee.Department.Name),
+
+            EmployeeSort.FirstName => employees = request.SortDirection == SortDirection.Ascending ?
+                employees.OrderBy(employee => employee.FirstName) :
+                employees.OrderByDescending(employee => employee.FirstName),
+
+            EmployeeSort.MiddleName => employees = request.SortDirection == SortDirection.Ascending ?
+                employees.OrderBy(employee => employee.MiddleName) :
+                employees.OrderByDescending(employee => employee.MiddleName),
+
+            EmployeeSort.LastName => employees = request.SortDirection == SortDirection.Ascending ?
+                employees.OrderBy(employee => employee.LastName) :
+                employees.OrderByDescending(employee => employee.LastName),
+
+            EmployeeSort.BirthDate => employees = request.SortDirection == SortDirection.Ascending ?
+                employees.OrderBy(employee => employee.BirthDate) :
+                employees.OrderByDescending(employee => employee.BirthDate),
+
+            EmployeeSort.HireDate => employees = request.SortDirection == SortDirection.Ascending ?
+                employees.OrderBy(employee => employee.HireDate) :
+                employees.OrderByDescending(employee => employee.HireDate),
+
+            EmployeeSort.Salary => employees = request.SortDirection == SortDirection.Ascending ?
+                employees.OrderBy(employee => employee.Salary) :
+                employees.OrderByDescending(employee => employee.Salary),
+
+            _ => employees
+        };
 
         return employees;
     }
