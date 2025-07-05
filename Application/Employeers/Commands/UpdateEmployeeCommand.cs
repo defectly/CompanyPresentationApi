@@ -49,7 +49,7 @@ public class UpdateEmployeeCommandHandler(IDbContext db) : IRequestHandler<Updat
         var employee = await db.Employees.FirstOrDefaultAsync(employee => employee.Id == request.Id, cancellationToken);
 
         if (employee == null)
-            throw new NotFoundException();
+            throw new NotFoundException($"Employee with id {request.Id} not found");
 
         if (request.DepartmentId != null)
         {
