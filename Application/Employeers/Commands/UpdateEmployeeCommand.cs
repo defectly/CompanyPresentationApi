@@ -24,7 +24,7 @@ public class UpdateEmployeeCommandValidator : AbstractValidator<UpdateEmployeeCo
     {
         // FirstName validation
         RuleFor(p => p.FirstName)
-            .NotEmpty().When(p => p.FirstName != null).WithMessage("First name is required")
+            .NotEmpty().When(p => p.FirstName != null).WithMessage("First name should not be empty")
             .Length(2, 50).WithMessage("First name must be between 2 and 50 characters")
             .Matches(@"^[a-zA-Z'-]+$").WithMessage("First name can only contain letters, apostrophes, or hyphens");
 
@@ -35,7 +35,7 @@ public class UpdateEmployeeCommandValidator : AbstractValidator<UpdateEmployeeCo
 
         // LastName validation - only applied when not null
         RuleFor(p => p.LastName)
-            .NotEmpty().When(p => p.LastName != null).WithMessage("Last name is required")
+            .NotEmpty().When(p => p.LastName != null).WithMessage("Last name should not be empty")
             .Length(2, 50).WithMessage("Last name must be between 2 and 50 characters")
             .Matches(@"^[a-zA-Z'-]+$").WithMessage("Last name can only contain letters, apostrophes, or hyphens");
     }
