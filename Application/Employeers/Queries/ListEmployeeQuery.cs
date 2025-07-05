@@ -38,7 +38,7 @@ public class ListEmployeeQuery : IRequest<PaginationDTO<GetEmployeeDTO>>
 public class ListEmployeeQueryValidator : AbstractValidator<ListEmployeeQuery>
 {
     private static readonly HashSet<string> _sortable =
-    typeof(Employee).GetProperties()
+    typeof(ListEmployeeQuery).GetProperties()
                     .Where(p => Attribute.IsDefined(p, typeof(SortableAttribute)))
                     .Select(p => p.Name)
                     .ToHashSet(StringComparer.OrdinalIgnoreCase);
