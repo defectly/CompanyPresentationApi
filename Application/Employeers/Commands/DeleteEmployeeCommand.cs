@@ -14,7 +14,7 @@ public class DeleteEmployeeCommandHandler(IDbContext db) : IRequestHandler<Delet
         var employee = await db.Employees.FirstOrDefaultAsync(employee => employee.Id == request.Id, cancellationToken);
 
         if (employee == null)
-            throw new NotFoundException();
+            throw new NotFoundException($"Employee with id {request.Id} not found");
 
         db.Employees.Remove(employee);
 
