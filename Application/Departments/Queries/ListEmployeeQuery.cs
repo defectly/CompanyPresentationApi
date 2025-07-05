@@ -9,19 +9,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Application.Departments.Queries;
 
-public class ListDepartmentQuery : IRequest<PaginationDTO<GetDepartmentDTO>>
+public class ListDepartmentQuery : IRequest<List<GetDepartmentDTO>>
 {
-    public int Page { get; set; } = 1;
-    public int Limit { get; set; } = 20;
-
     public string? Name { get; set; }
 
     public NameSort NameSort { get; set; } = NameSort.None;
 }
 
-public class ListDepartmentQueryHandler(IDbContext db, IMapper mapper) : IRequestHandler<ListDepartmentQuery, PaginationDTO<GetDepartmentDTO>>
+public class ListDepartmentQueryHandler(IDbContext db, IMapper mapper) : IRequestHandler<ListDepartmentQuery, List<GetDepartmentDTO>>
 {
-    public async Task<PaginationDTO<GetDepartmentDTO>> Handle(ListDepartmentQuery request, CancellationToken cancellationToken)
+    public async Task<List<GetDepartmentDTO>> Handle(ListDepartmentQuery request, CancellationToken cancellationToken)
     {
         IQueryable<Department> departments = db.Departments
             .AsNoTrackingWithIdentityResolution();
@@ -29,9 +26,9 @@ public class ListDepartmentQueryHandler(IDbContext db, IMapper mapper) : IReques
         departments = FilterDepartments(departments, request);
         departments = SortDepartments(departments, request);
 
-        var pagination = PaginationDTO<GetDepartmentDTO>.CreateMappedPagination(departments, request.Page, request.Limit, mapper);
+        var departmentsDTO = mapper.Map<List<GetDepartmentDTO>>(departments);
 
-        return pagination;
+        return departmentsDTO;
     }
 
     private static IQueryable<Department> FilterDepartments(IQueryable<Department> Departments, ListDepartmentQuery request)

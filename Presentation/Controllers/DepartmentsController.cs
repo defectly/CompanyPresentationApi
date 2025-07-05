@@ -26,7 +26,7 @@ public class DepartmentsController(IMediator mediator) : ControllerBase
 
     [HttpGet]
     [ProducesResponseType(200)]
-    [Produces(typeof(PaginationDTO<GetDepartmentDTO>))]
+    [Produces(typeof(List<GetDepartmentDTO>))]
     public async Task<IActionResult> List([FromQuery] ListDepartmentQuery query)
     {
         var response = await mediator.Send(query);
