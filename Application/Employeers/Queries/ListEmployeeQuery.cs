@@ -21,9 +21,9 @@ public class ListEmployeeQuery : IRequest<PaginationDTO<GetEmployeeDTO>>
     [Sortable] public string? MiddleName { get; set; }
     [Sortable] public string? LastName { get; set; }
 
-    [Sortable] private DateTime? BirthDate { get; set; }
-    [Sortable] private DateTime? HireDate { get; set; }
-    [Sortable] private decimal? Salary { get; set; }
+    [Sortable] public DateTime? BirthDate { get; set; }
+    [Sortable] public DateTime? HireDate { get; set; }
+    [Sortable] public decimal? Salary { get; set; }
 
     public DateTime? MinBirthDate { get; set; }
     public DateTime? MaxBirthDate { get; set; }
