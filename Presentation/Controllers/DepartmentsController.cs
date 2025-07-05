@@ -1,4 +1,3 @@
-using Application.Common.DTO;
 using Application.Departments.Commands;
 using Application.Departments.Queries;
 using Application.Departments.Queries.DTO;

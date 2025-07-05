@@ -1,9 +1,10 @@
-﻿using Application.Common.DTO;
-using Application.Common.Enums;
+﻿using Application.Common.Enums;
 using Application.Common.Services;
+using Application.Departments.Commands;
 using Application.Departments.Queries.DTO;
 using AutoMapper;
 using Domain.Entities;
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 

@@ -1,9 +1,11 @@
-﻿using Application.Common.DTO;
+﻿using Application.Common.Attributes;
+using Application.Common.DTO;
 using Application.Common.Enums;
 using Application.Common.Services;
 using Application.Employeers.Queries.DTO;
 using AutoMapper;
 using Domain.Entities;
+using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,10 +16,14 @@ public class ListEmployeeQuery : IRequest<PaginationDTO<GetEmployeeDTO>>
     public int Page { get; set; } = 1;
     public int Limit { get; set; } = 20;
 
-    public string? Department { get; set; }
-    public string? FirstName { get; set; }
-    public string? MiddleName { get; set; }
-    public string? LastName { get; set; }
+    [Sortable] public string? Department { get; set; }
+    [Sortable] public string? FirstName { get; set; }
+    [Sortable] public string? MiddleName { get; set; }
+    [Sortable] public string? LastName { get; set; }
+
+    [Sortable] public DateTime? BirthDate { get; set; }
+    [Sortable] public DateTime? HireDate { get; set; }
+    [Sortable] public decimal? Salary { get; set; }
 
     public DateTime? MinBirthDate { get; set; }
     public DateTime? MaxBirthDate { get; set; }
@@ -26,13 +32,22 @@ public class ListEmployeeQuery : IRequest<PaginationDTO<GetEmployeeDTO>>
     public decimal? MinSalary { get; set; }
     public decimal? MaxSalary { get; set; }
 
-    public DepartmentSort DepartmentSort { get; set; } = DepartmentSort.None;
-    public FirstNameSort FirstNameSort { get; set; } = FirstNameSort.None;
-    public MiddleNameSort MiddleNameSort { get; set; } = MiddleNameSort.None;
-    public LastNameSort LastNameSort { get; set; } = LastNameSort.None;
-    public HireDateSort HireDateSort { get; set; } = HireDateSort.None;
-    public BirthDateSort BirthDateSort { get; set; } = BirthDateSort.None;
-    public SalarySort SalarySort { get; set; } = SalarySort.None;
+    public SortDTO[] Sorts { get; set; } = [];
+}
+
+public class ListEmployeeQueryValidator : AbstractValidator<ListEmployeeQuery>
+{
+    private static readonly HashSet<string> _sortable =
+    typeof(Employee).GetProperties()
+                    .Where(p => Attribute.IsDefined(p, typeof(SortableAttribute)))
+                    .Select(p => p.Name)
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+    public ListEmployeeQueryValidator()
+    {
+        RuleForEach(query => query.Sorts)
+            .Must(sort => _sortable.Contains(sort.PropertyName));
+    }
 }
 
 public class ListEmployeeQueryHandler(IDbContext db, IMapper mapper) : IRequestHandler<ListEmployeeQuery, PaginationDTO<GetEmployeeDTO>>
@@ -89,26 +104,20 @@ public class ListEmployeeQueryHandler(IDbContext db, IMapper mapper) : IRequestH
 
     private static IQueryable<Employee> SortEmployees(IQueryable<Employee> employees, ListEmployeeQuery request)
     {
-        if (request.DepartmentSort != DepartmentSort.None)
-            employees = request.DepartmentSort == DepartmentSort.Ascending ? employees.OrderBy(emp => emp.Department) : employees.OrderByDescending(emp => emp.Department);
+        string[] properties = typeof(ListEmployeeQuery).GetProperties()
+            .Where(p => Attribute.IsDefined(p, typeof(SortableAttribute)))
+            .Select(property => property.Name).ToArray();
 
-        if (request.FirstNameSort != FirstNameSort.None)
-            employees = request.FirstNameSort == FirstNameSort.Ascending ? employees.OrderBy(emp => emp.FirstName) : employees.OrderByDescending(emp => emp.FirstName);
+        for (int i = 0; i < request.Sorts.Length; i++)
+        {
+            if (request.Sorts[i] == null)
+                continue;
 
-        if (request.MiddleNameSort != MiddleNameSort.None)
-            employees = request.MiddleNameSort == MiddleNameSort.Ascending ? employees.OrderBy(emp => emp.MiddleName) : employees.OrderByDescending(emp => emp.MiddleName);
-
-        if (request.LastNameSort != LastNameSort.None)
-            employees = request.LastNameSort == LastNameSort.Ascending ? employees.OrderBy(emp => emp.LastName) : employees.OrderByDescending(emp => emp.LastName);
-
-        if (request.HireDateSort != HireDateSort.None)
-            employees = request.HireDateSort == HireDateSort.Ascending ? employees.OrderBy(emp => emp.HireDate) : employees.OrderByDescending(emp => emp.HireDate);
-
-        if (request.BirthDateSort != BirthDateSort.None)
-            employees = request.BirthDateSort == BirthDateSort.Ascending ? employees.OrderBy(emp => emp.BirthDate) : employees.OrderByDescending(emp => emp.BirthDate);
-
-        if (request.SalarySort != SalarySort.None)
-            employees = request.SalarySort == SalarySort.Ascending ? employees.OrderBy(emp => emp.Salary) : employees.OrderByDescending(emp => emp.Salary);
+            if (request.Sorts[i].SortDirection == SortDirection.Ascending)
+                employees = employees.OrderBy(employee => employee.GetType().GetProperty(request.Sorts[i].PropertyName));
+            else
+                employees = employees.OrderByDescending(employee => employee.GetType().GetProperty(request.Sorts[i].PropertyName));
+        }
 
         return employees;
     }
