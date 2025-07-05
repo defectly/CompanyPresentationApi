@@ -5,7 +5,7 @@ namespace Application.Employeers.Queries.DTO;
 public class GetEmployeeDTO
 {
     public required Guid Id { get; set; }
-    public required Department Department { get; set; }
+    public required Guid DepartmentId { get; set; }
     public required string FirstName { get; set; }
     public string? MiddleName { get; set; }
     public required string LastName { get; set; }
@@ -18,6 +18,7 @@ public class GetAboutCompanyMappingProfile : Profile
 {
     public GetAboutCompanyMappingProfile()
     {
-        CreateMap<Employee, GetEmployeeDTO>();
+        CreateMap<Employee, GetEmployeeDTO>()
+            .ForMember(src => src.DepartmentId, dest => dest.MapFrom(employee => employee.Department.Id));
     }
 }
