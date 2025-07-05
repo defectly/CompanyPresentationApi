@@ -63,7 +63,7 @@ public class EmployeesController(IMediator mediator) : ControllerBase
         var command = new UpdateEmployeeCommand
         {
             Id = id,
-            Department = updateEmployeeDTO.Department,
+            DepartmentId = updateEmployeeDTO.DepartmentId,
             FirstName = updateEmployeeDTO.FirstName,
             MiddleName = updateEmployeeDTO.MiddleName,
             LastName = updateEmployeeDTO.LastName,

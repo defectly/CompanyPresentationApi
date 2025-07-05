@@ -1,14 +1,15 @@
 ﻿using Application.Common.Services;
+using Application.Exceptions;
 using Domain.Entities;
 using FluentValidation;
 using MediatR;
-using System.Text.RegularExpressions;
+using Microsoft.EntityFrameworkCore;
 
 namespace Application.Employeers.Commands;
 
 public class CreateEmployeeCommand : IRequest<Guid>
 {
-    public required string Department { get; set; }
+    public required Guid DepartmentId { get; set; }
     public required string FirstName { get; set; }
     public string? MiddleName { get; set; }
     public required string LastName { get; set; }
@@ -21,10 +22,6 @@ public class CreateEmployeeCommandValidator : AbstractValidator<CreateEmployeeCo
 {
     public CreateEmployeeCommandValidator()
     {
-        // Department validation
-        RuleFor(x => x.Department)
-            .Must(department => !string.IsNullOrWhiteSpace(department));
-
         // FirstName validation
         RuleFor(p => p.FirstName)
             .NotEmpty().WithMessage("First name is required")
@@ -48,9 +45,14 @@ public class CreateEmployeeCommandHandler(IDbContext db) : IRequestHandler<Creat
 {
     public async Task<Guid> Handle(CreateEmployeeCommand request, CancellationToken cancellationToken)
     {
+        var department = await db.Departments.FirstOrDefaultAsync(department => department.Id == request.DepartmentId, cancellationToken);
+
+        if (department == null)
+            throw new NotFoundException($"Department with id {request.DepartmentId} not found");
+
         var employee = new Employee
         {
-            Department = request.Department,
+            Department = department,
             FirstName = request.FirstName,
             MiddleName = request.MiddleName,
             LastName = request.LastName,

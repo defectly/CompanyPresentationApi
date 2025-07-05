@@ -7,6 +7,7 @@ namespace Infrastructure.Persistence;
 public class CompanyDbContext(DbContextOptions options) : DbContext(options), IDbContext
 {
     public DbSet<Employee> Employees { get; set; }
+    public DbSet<Department> Departments { get; set; }
 
     public Task<int> SaveChangesAsync() => base.SaveChangesAsync();
 }

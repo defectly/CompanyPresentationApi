@@ -53,7 +53,7 @@ public class ListEmployeeQueryHandler(IDbContext db, IMapper mapper) : IRequestH
     private static IQueryable<Employee> FilterEmployees(IQueryable<Employee> employees, ListEmployeeQuery request)
     {
         if (!string.IsNullOrWhiteSpace(request.Department))
-            employees = employees.Where(employee => employee.Department.ToLower().Contains(request.Department.ToLower()));
+            employees = employees.Where(employee => employee.Department.Name.ToLower().Contains(request.Department.ToLower()));
 
         if (!string.IsNullOrWhiteSpace(request.FirstName))
             employees = employees.Where(employee => employee.FirstName.ToLower().Contains(request.FirstName.ToLower()));

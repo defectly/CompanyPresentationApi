@@ -9,7 +9,7 @@ namespace Application.Employeers.Commands;
 public class UpdateEmployeeCommand : IRequest
 {
     public required Guid Id { get; set; }
-    public string? Department { get; set; }
+    public Guid? DepartmentId { get; set; }
     public string? FirstName { get; set; }
     public string? MiddleName { get; set; }
     public string? LastName { get; set; }
@@ -22,11 +22,6 @@ public class UpdateEmployeeCommandValidator : AbstractValidator<UpdateEmployeeCo
 {
     public UpdateEmployeeCommandValidator()
     {
-        // Department validation - only applied when not null
-        RuleFor(x => x.Department)
-            .Must(department => !string.IsNullOrWhiteSpace(department))
-            .When(p => p.Department != null);
-
         // FirstName validation
         RuleFor(p => p.FirstName)
             .NotEmpty().When(p => p.FirstName != null).WithMessage("First name is required")
@@ -56,8 +51,15 @@ public class UpdateEmployeeCommandHandler(IDbContext db) : IRequestHandler<Updat
         if (employee == null)
             throw new NotFoundException();
 
-        if (request.Department != null)
-            employee.Department = request.Department;
+        if (request.DepartmentId != null)
+        {
+            var department = await db.Departments.FirstOrDefaultAsync(department => department.Id == request.DepartmentId, cancellationToken);
+
+            if (department == null)
+                throw new NotFoundException($"Department with id {request.DepartmentId} not found");
+
+            employee.Department = department;
+        }
 
         if (!string.IsNullOrWhiteSpace(request.FirstName))
             employee.FirstName = request.FirstName;
