@@ -21,9 +21,9 @@ public class ListEmployeeQuery : IRequest<PaginationDTO<GetEmployeeDTO>>
     [Sortable] public string? MiddleName { get; set; }
     [Sortable] public string? LastName { get; set; }
 
-    [Sortable] public DateTime? BirthDate { get; set; }
-    [Sortable] public DateTime? HireDate { get; set; }
-    [Sortable] public decimal? Salary { get; set; }
+    [Sortable] private DateTime? BirthDate { get; set; }
+    [Sortable] private DateTime? HireDate { get; set; }
+    [Sortable] private decimal? Salary { get; set; }
 
     public DateTime? MinBirthDate { get; set; }
     public DateTime? MaxBirthDate { get; set; }
@@ -32,7 +32,8 @@ public class ListEmployeeQuery : IRequest<PaginationDTO<GetEmployeeDTO>>
     public decimal? MinSalary { get; set; }
     public decimal? MaxSalary { get; set; }
 
-    public SortDTO[] Sorts { get; set; } = [];
+    public SortDirection SortDirection { get; set; } = SortDirection.None;
+    public string? SortPropertyName { get; set; }
 }
 
 public class ListEmployeeQueryValidator : AbstractValidator<ListEmployeeQuery>
@@ -45,8 +46,10 @@ public class ListEmployeeQueryValidator : AbstractValidator<ListEmployeeQuery>
 
     public ListEmployeeQueryValidator()
     {
-        RuleForEach(query => query.Sorts)
-            .Must(sort => _sortable.Contains(sort.PropertyName));
+        RuleFor(query => query.SortPropertyName)
+            .Must(sortPropertyName => _sortable.Contains(sortPropertyName!))
+            .WithMessage($"{nameof(ListEmployeeQuery.SortPropertyName)} must be one of the following: {string.Join(", ", _sortable)}")
+            .When(sort => sort != null);
     }
 }
 
@@ -105,20 +108,13 @@ public class ListEmployeeQueryHandler(IDbContext db, IMapper mapper) : IRequestH
 
     private static IQueryable<Employee> SortEmployees(IQueryable<Employee> employees, ListEmployeeQuery request)
     {
-        string[] properties = typeof(ListEmployeeQuery).GetProperties()
-            .Where(p => Attribute.IsDefined(p, typeof(SortableAttribute)))
-            .Select(property => property.Name).ToArray();
+        if (request.SortPropertyName == null || request.SortDirection == SortDirection.None)
+            return employees;
 
-        for (int i = 0; i < request.Sorts.Length; i++)
-        {
-            if (request.Sorts[i] == null)
-                continue;
-
-            if (request.Sorts[i].SortDirection == SortDirection.Ascending)
-                employees = employees.OrderBy(employee => employee.GetType().GetProperty(request.Sorts[i].PropertyName));
-            else
-                employees = employees.OrderByDescending(employee => employee.GetType().GetProperty(request.Sorts[i].PropertyName));
-        }
+        if (request.SortDirection == SortDirection.Ascending)
+            employees = employees.OrderBy(employee => employee.GetType().GetProperty(request.SortPropertyName));
+        else
+            employees = employees.OrderByDescending(employee => employee.GetType().GetProperty(request.SortPropertyName));
 
         return employees;
     }

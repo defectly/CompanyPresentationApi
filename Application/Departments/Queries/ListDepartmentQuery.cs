@@ -1,5 +1,4 @@
 ﻿using Application.Common.Attributes;
-using Application.Common.DTO;
 using Application.Common.Enums;
 using Application.Common.Services;
 using Application.Departments.Queries.DTO;
@@ -15,7 +14,8 @@ public class ListDepartmentQuery : IRequest<List<GetDepartmentDTO>>
 {
     [Sortable] public string? Name { get; set; }
 
-    public SortDTO[] Sorts { get; set; } = [];
+    public SortDirection SortDirection { get; set; } = SortDirection.None;
+    public string? SortPropertyName { get; set; }
 }
 
 public class ListDepartmentQueryValidator : AbstractValidator<ListDepartmentQuery>
@@ -28,8 +28,10 @@ public class ListDepartmentQueryValidator : AbstractValidator<ListDepartmentQuer
 
     public ListDepartmentQueryValidator()
     {
-        RuleForEach(query => query.Sorts)
-            .Must(sort => _sortable.Contains(sort.PropertyName));
+        RuleFor(query => query.SortPropertyName)
+            .Must(sortPropertyName => _sortable.Contains(sortPropertyName!))
+            .WithMessage($"{nameof(ListDepartmentQuery.SortPropertyName)} must be one of the following: {string.Join(", ", _sortable)}")
+            .When(sort => sort != null);
     }
 }
 
@@ -58,20 +60,13 @@ public class ListDepartmentQueryHandler(IDbContext db, IMapper mapper) : IReques
 
     private static IQueryable<Department> SortDepartments(IQueryable<Department> departments, ListDepartmentQuery request)
     {
-        string[] properties = typeof(ListDepartmentQuery).GetProperties()
-            .Where(p => Attribute.IsDefined(p, typeof(SortableAttribute)))
-            .Select(property => property.Name).ToArray();
+        if (request.SortPropertyName == null || request.SortDirection == SortDirection.None)
+            return departments;
 
-        for (int i = 0; i < request.Sorts.Length; i++)
-        {
-            if (request.Sorts[i] == null)
-                continue;
-
-            if (request.Sorts[i].SortDirection == SortDirection.Ascending)
-                departments = departments.OrderBy(employee => employee.GetType().GetProperty(request.Sorts[i].PropertyName));
-            else
-                departments = departments.OrderByDescending(employee => employee.GetType().GetProperty(request.Sorts[i].PropertyName));
-        }
+        if (request.SortDirection == SortDirection.Ascending)
+            departments = departments.OrderBy(employee => employee.GetType().GetProperty(request.SortPropertyName));
+        else
+            departments = departments.OrderByDescending(employee => employee.GetType().GetProperty(request.SortPropertyName));
 
         return departments;
     }
