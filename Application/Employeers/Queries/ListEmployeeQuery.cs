@@ -47,9 +47,9 @@ public class ListEmployeeQueryValidator : AbstractValidator<ListEmployeeQuery>
     public ListEmployeeQueryValidator()
     {
         RuleFor(query => query.SortPropertyName)
-            .Must(sortPropertyName => _sortable.Contains(sortPropertyName!))
-            .WithMessage($"{nameof(ListEmployeeQuery.SortPropertyName)} must be one of the following: {string.Join(", ", _sortable)}")
-            .When(sort => sort != null);
+            .Must(_sortable.Contains)
+            .When(query => query.SortPropertyName != null)
+            .WithMessage($"{nameof(ListEmployeeQuery.SortPropertyName)} must be one of the following: {string.Join(", ", _sortable)}");
     }
 }
 

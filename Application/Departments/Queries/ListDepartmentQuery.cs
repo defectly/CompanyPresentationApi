@@ -30,8 +30,8 @@ public class ListDepartmentQueryValidator : AbstractValidator<ListDepartmentQuer
     {
         RuleFor(query => query.SortPropertyName)
             .Must(sortPropertyName => _sortable.Contains(sortPropertyName!))
-            .WithMessage($"{nameof(ListDepartmentQuery.SortPropertyName)} must be one of the following: {string.Join(", ", _sortable)}")
-            .When(sort => sort != null);
+            .When(sort => sort.SortPropertyName != null)
+            .WithMessage($"{nameof(ListDepartmentQuery.SortPropertyName)} must be one of the following: {string.Join(", ", _sortable)}");
     }
 }
 
