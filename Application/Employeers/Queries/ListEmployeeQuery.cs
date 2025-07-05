@@ -55,6 +55,7 @@ public class ListEmployeeQueryHandler(IDbContext db, IMapper mapper) : IRequestH
     public async Task<PaginationDTO<GetEmployeeDTO>> Handle(ListEmployeeQuery request, CancellationToken cancellationToken)
     {
         IQueryable<Employee> employees = db.Employees
+            .Include(employee => employee.Department)
             .AsNoTrackingWithIdentityResolution();
 
         employees = FilterEmployees(employees, request);

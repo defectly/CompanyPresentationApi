@@ -5,7 +5,7 @@ namespace Application.Employeers.Queries.DTO;
 public class GetEmployeeDTO
 {
     public required Guid Id { get; set; }
-    public required string Department { get; set; }
+    public required Department Department { get; set; }
     public required string FirstName { get; set; }
     public string? MiddleName { get; set; }
     public required string LastName { get; set; }
