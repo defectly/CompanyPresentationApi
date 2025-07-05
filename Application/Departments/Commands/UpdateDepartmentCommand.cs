@@ -36,6 +36,8 @@ public class UpdateDepartmentCommandHandler(IDbContext db) : IRequestHandler<Upd
         if (!string.IsNullOrWhiteSpace(request.Name))
             department.FirstName = request.Name;
 
+        department.UpdatedAt = DateTime.UtcNow;
+
         await db.SaveChangesAsync();
     }
 }

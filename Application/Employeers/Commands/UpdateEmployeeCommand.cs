@@ -79,6 +79,8 @@ public class UpdateEmployeeCommandHandler(IDbContext db) : IRequestHandler<Updat
         if (request.Salary != null)
             employee.Salary = (decimal)request.Salary;
 
+        employee.UpdatedAt = DateTime.UtcNow;
+
         await db.SaveChangesAsync();
     }
 }
