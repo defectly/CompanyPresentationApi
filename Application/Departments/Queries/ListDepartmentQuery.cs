@@ -1,6 +1,7 @@
-﻿using Application.Common.Enums;
+﻿using Application.Common.Attributes;
+using Application.Common.DTO;
+using Application.Common.Enums;
 using Application.Common.Services;
-using Application.Departments.Commands;
 using Application.Departments.Queries.DTO;
 using AutoMapper;
 using Domain.Entities;
@@ -12,9 +13,24 @@ namespace Application.Departments.Queries;
 
 public class ListDepartmentQuery : IRequest<List<GetDepartmentDTO>>
 {
-    public string? Name { get; set; }
+    [Sortable] public string? Name { get; set; }
 
-    public NameSort NameSort { get; set; } = NameSort.None;
+    public SortDTO[] Sorts { get; set; } = [];
+}
+
+public class ListDepartmentQueryValidator : AbstractValidator<ListDepartmentQuery>
+{
+    private static readonly HashSet<string> _sortable =
+    typeof(ListDepartmentQuery).GetProperties()
+                    .Where(p => Attribute.IsDefined(p, typeof(SortableAttribute)))
+                    .Select(p => p.Name)
+                    .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+    public ListDepartmentQueryValidator()
+    {
+        RuleForEach(query => query.Sorts)
+            .Must(sort => _sortable.Contains(sort.PropertyName));
+    }
 }
 
 public class ListDepartmentQueryHandler(IDbContext db, IMapper mapper) : IRequestHandler<ListDepartmentQuery, List<GetDepartmentDTO>>
@@ -40,11 +56,23 @@ public class ListDepartmentQueryHandler(IDbContext db, IMapper mapper) : IReques
         return Departments;
     }
 
-    private static IQueryable<Department> SortDepartments(IQueryable<Department> Departments, ListDepartmentQuery request)
+    private static IQueryable<Department> SortDepartments(IQueryable<Department> departments, ListDepartmentQuery request)
     {
-        if (request.NameSort != NameSort.None)
-            Departments = request.NameSort == NameSort.Ascending ? Departments.OrderBy(dep => dep.Name) : Departments.OrderByDescending(dep => dep.Name);
+        string[] properties = typeof(ListDepartmentQuery).GetProperties()
+            .Where(p => Attribute.IsDefined(p, typeof(SortableAttribute)))
+            .Select(property => property.Name).ToArray();
 
-        return Departments;
+        for (int i = 0; i < request.Sorts.Length; i++)
+        {
+            if (request.Sorts[i] == null)
+                continue;
+
+            if (request.Sorts[i].SortDirection == SortDirection.Ascending)
+                departments = departments.OrderBy(employee => employee.GetType().GetProperty(request.Sorts[i].PropertyName));
+            else
+                departments = departments.OrderByDescending(employee => employee.GetType().GetProperty(request.Sorts[i].PropertyName));
+        }
+
+        return departments;
     }
 }
